@@ -1,0 +1,13 @@
+cd/projects/BICpipeline/Pipeline_Pilot/TestingFork/RSP_dev
+export subjects='sub-2528'
+export sessions='ses-A'
+export SUBS_DIR=/data
+export RSFCscripts=/scripts
+export DATA=/data/derivatives/restingstatepipeline
+export parcellation_labels_file=/scripts/aparc_labels_add.txt
+export OUTPUT=/data/derivatives/restingstatepipeline/out
+
+singularity run --bind ./scripts:/scripts --bind ../PEA_tutorial/BIDS:/data ./rsp.simg python2.7 /scripts/maskGen_dev
+singularity run --bind ./scripts:/scripts --bind ../PEA_tutorial/BIDS:/data ./rsp.simg python2.7 /scripts/Freesurfer_ROIs_dev.py
+singularity run --bind ./scripts:/scripts --bind ../PEA_tutorial/BIDS:/data ./rsp.simg /scripts/incorporate_suits4exp_dev.sh
+singularity run --bind ./scripts:/scripts --bind ../PEA_tutorial/BIDS:/data --bind ./bxh_xcede_tools-1.11.14-lsb30.x86_64:/bxh ./rsp.simg /scripts/path3SUIT sub-2528/ses-A

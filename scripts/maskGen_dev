@@ -1,0 +1,27 @@
+#!/usr/bin/python
+# This script takes an input brain from the user and uses fast with specified parameters
+# Ensure that Freesurfersub is an environmental variable pointing to the "Freesurfersub" directory
+
+import subprocess
+import os
+from nipype.interfaces import fsl
+
+data = '/data/derivatives/restingstatepipeline'
+numbers = os.environ['subses'].split()
+
+for subnum in numbers:
+    outdir = str(data + "/" + subnum + "/anat")
+    os.chdir(outdir)
+
+    fastr = fsl.FAST()
+    fastr.inputs.in_files = "{}/fslbrain.nii.gz".format(outdir)
+    fastr.inputs.out_basename = "{}/ref".format(outdir)
+    fastr.inputs.img_type = 1
+    fastr.inputs.no_pve = True
+    fastr.inputs.segments = True
+    print("Running FAST")
+    fastr.run()
+
+    os.rename("{}/ref_seg_0.nii.gz".format(outdir),"{}/refcsf.nii.gz".format(outdir))
+    os.rename("{}/ref_seg_1.nii.gz".format(outdir),"{}/refgm.nii.gz".format(outdir))
+    os.rename("{}/ref_seg_2.nii.gz".format(outdir),"{}/refwm.nii.gz".format(outdir))

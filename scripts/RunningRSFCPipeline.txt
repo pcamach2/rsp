@@ -1,0 +1,24 @@
+#Switch session and subject in the scripts if necessary or write for ses loop
+export FREESURFER_HOME=/Applications/freesurfer
+source $FREESURFER_HOME/sources.sh
+
+export SUBS_DIR=/Users/pcamach2/Downloads/TDP_BIDS/HDCwsbref
+export DATA=$SUBS_DIR/derivatives/restingstatepipeline
+export RSFCscripts=/Users/pcamach2/Downloads/BIDS_Pipeline/RSPipeline_BPS_withSUIT
+export OUTPUT=$SUBS_DIR/derivatives/restingstatepipeline/out
+#export FSsub=$SUBS_DIR/derivatives/freesurfer/
+#cp whatever outputs from $FSsub to $OUTPUT/Freesurfersubs
+#export Freesurfersub=$OUTPUT/Freesurfersubs
+
+export parcellation_labels_file=$RSFCscripts/aparc_labels.txt
+
+Then go to RSPipeline_BPS_withSUIT Script folder and run:
+./RSFCprepNFP.sh #for NFP only
+python2.7 ./maskGen      - no inputs, but it will ask to input subject name/session 
+python2.7 ./Freesurfer_ROIs.py - no inputs, but it will ask to input subject name/session      
+
+./incorporate_suits4exp.sh
+./path3SUIT subject_name/session
+
+For BIDS-compatible original pipeline w/o fmriprep preprocessing of func in MNI152 space,
+use files with NFP (no fmriprep) suffix 

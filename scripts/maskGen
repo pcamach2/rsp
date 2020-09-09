@@ -1,0 +1,41 @@
+#!/usr/bin/python
+# This script takes an input brain from the user and uses fast with specified parameters
+# Ensure that Freesurfersub is an environmental variable pointing to the "Freesurfersub" directory
+
+import subprocess
+import os
+from nipype.interfaces import fsl
+
+#freeSub = os.environ['Freesurfersub']
+data = os.environ['DATA']
+
+numbers = str(raw_input('Enter subject numbers and sessions e.g. sub-MBB001/ses-01: ')).split()
+
+for subnum in numbers:
+    outdir = str(data + "/" + subnum + "/anat")
+    os.chdir(outdir)
+    # convert file format of structural image and change directory to data folder
+    # This line may need to be modified, depending on the file naming convention
+#    thisprocstr = str("mri_convert --in_type mgz --out_type nii -i " + freeSub + "/" +
+#                      subnum + "*/mri/brain.mgz -o " + outdir + "/fslbrain.nii.gz")
+#    print("Running : " + thisprocstr)
+#    subprocess.Popen(thisprocstr, shell=True).wait()
+
+    # change orientation to be in line with standard brain
+#    thisprocstr = str("fslreorient2std " + outdir +
+#                      "/fslbrain.nii.gz " + outdir + "/fslbrain.nii.gz ")
+#    print("Running : " + thisprocstr)
+#    subprocess.Popen(thisprocstr, shell=True).wait()
+
+    fastr = fsl.FAST()
+    fastr.inputs.in_files = "{}/fslbrain.nii.gz".format(outdir)
+    fastr.inputs.out_basename = "{}/ref".format(outdir)
+    fastr.inputs.img_type = 1
+    fastr.inputs.no_pve = True
+    fastr.inputs.segments = True
+    print("Running FAST")
+    fastr.run()
+
+    os.rename("{}/ref_seg_0.nii.gz".format(outdir),"{}/refcsf.nii.gz".format(outdir))
+    os.rename("{}/ref_seg_1.nii.gz".format(outdir),"{}/refgm.nii.gz".format(outdir))
+    os.rename("{}/ref_seg_2.nii.gz".format(outdir),"{}/refwm.nii.gz".format(outdir))

@@ -1,0 +1,82 @@
+#!/bin/bash
+
+
+# This is the pipeline wrapper. Typically, this should be the only file you would need to modify to suit your individual needs.
+# Ensure that the RSFCscripts env variable is the folder which contains this script, the DATA variable is correctly set, and The output folder is wherever you want all the ouput from this pipeline to go. It should be stored in an OUTPUT environmental variable.
+# Example: /home/bsutton/mrfil-data/PoeKyle/NMSS_comp/SROPstudy/outputs
+
+if [ ! -f ${RSFCscripts}/"resting_pipeline_2mm_SUIT.py" ] ; then
+    read -p "Please enter location of resting_pipeline_2mm_SUIT.py: " FILE ;
+    if [ ! `basename $FILE` = "resting_pipeline_2mm_SUIT.py" ] ; then
+        echo "Invalid file"
+        exit 1 ;
+    fi
+else
+    FILE=${RSFCscripts}/"resting_pipeline_2mm_SUIT.py" ;
+fi
+
+
+date=`date +%m-%d-%H-%M-%S`
+mkdir -p $OUTPUT/${date}
+session=$OUTPUT/${date}/session.txt
+echo "FILE " $FILE >>$session
+
+echo "SESSION" $date $'\n' >> $session
+# Supply arguments as subject numbers/session in the data directory
+# Example: path3 001
+# Example: path3 `ls $DATA`
+read -p "Please enter any notes regarding this particular session: " notes
+echo ${notes}$'\n' >> $session
+for DIR in $@ ; do
+# Execution
+
+# func=$DATA/$DIR/RSFC/`ls $DATA/$DIR/RSFC/ | grep nii` 
+# echo $func
+# add sessions
+    echo `date +%m-%d-%H-%M` ": Began processing" $DIR >> $session
+    echo $options >> $session
+    mkdir -p $OUTPUT/${date}/${DIR}
+   python2.7 $FILE --func=$DATA/$DIR/func/`ls $DATA/$DIR/func/ | grep nii` \
+        --outpath=$OUTPUT/${date}/${DIR} \
+        --prefix="${DIR:0:10}_${DIR:11:17}" \
+        --steps=0,1,2,3,4,5,6,7 \
+        --sliceorder=up \
+        --throwaway=4 \
+        --betfval=0.3 \
+        --anatbetfval=0.5 \
+        --scrubop=or \
+        --tr=1900 \
+        --ref=$DATA/$DIR/anat/fslbrain.nii.gz \
+        --refwm=$DATA/$DIR/anat/refwm.nii.gz \
+        --refcsf=$DATA/$DIR/anat/refcsf.nii.gz \
+        --refgm=$DATA/$DIR/anat/refgm.nii.gz \
+        --refbrainmask=$DATA/$DIR/anat/fslbrain.nii.gz \
+        --refacpoint=0,0,0 \
+        --corrlabel=$DATA/$DIR/freeMask/mask.nii.gz \
+        --corrtext=${RSFCscripts}/aparc_labels_add.txt \
+        --powerscrub;
+        #        --t1=$DIR/`ls $DIR | grep ^co | grep -v .bxh` \
+        # Functional image input
+        # Output location
+        # t1 weighted structural image
+        # Prefix for outputs
+        # Steps to be carried out
+        # Slice acquisition order for MCFLIRT
+        # Slices at the beginning to discard
+        # This is the threshold for BET
+        # Threshold for skull stripping ANAT
+        # Aggregation operator
+        # Specifies TR of fmri scan in ms
+        # Reference image for FLIRT
+        # White matter mask
+        # CSF mask
+        # Gray matter mask
+        # Brain mask of reference image
+        # Anterior commisure pointer, for graphing purposes
+        # 3D label file for interesting regions
+        # Text file for the 3D label
+        # Scrubbing method used by powers et al
+        # Remove extraneous files
+    echo `date +%m-%d-%H-%M` ": Finished processing" $DIR >> $session
+
+done

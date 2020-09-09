@@ -1,0 +1,19 @@
+#!/bin/bash
+# The purpose of this script is to move relevant files to their own folder for a subject.
+# This script should be run with bash.
+# Make sure that your data directory location is saved to an environmental variable DATA.
+# Make sure the the raw data folder that contains directories with names that look like 
+# "Clj_Nmss_Mre_001_031716" is saved in an environmental variable RAW
+# Example usage: subjectPrep `ls $RAW`
+
+for DIR in $@ ; do
+    rsFMRIdir=`basename $DIR`
+    echo $rsFMRIdir
+    subnum=${rsFMRIdir:13:3} # This indexes the raw subject data directory name and returns the subject number. Adjust accordingly, depending on output format.
+
+    # Making subject-specific directory
+    mkdir $DATA/$subnum
+
+    # Converting functional DICOM scan to nifti
+    dcm2niix -d N -o $DATA/$subnum `find $RAW/$rsFMRIdir/RSFC/ | grep .dcm`
+done
